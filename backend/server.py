@@ -144,7 +144,7 @@ async def search_and_scrape(query: str, max_results: int = 5) -> List[SearchResu
         logger.error(f"Search and scrape failed: {e}")
         raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
 
-async def generate_speech(text: str, voice_id: str = "21m00Tcm4TlmVhkVyaZB") -> str:
+async def generate_speech(text: str, voice_id: str = "21m00Tcm4TlvDq8ikWAM") -> str:
     """Generate speech using ElevenLabs and return base64 encoded audio"""
     try:
         # Generate audio using ElevenLabs (updated method usage)
