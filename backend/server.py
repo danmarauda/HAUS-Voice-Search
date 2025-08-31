@@ -147,11 +147,12 @@ async def search_and_scrape(query: str, max_results: int = 5) -> List[SearchResu
 async def generate_speech(text: str, voice_id: str = "21m00Tcm4TlmVhkVyaZB") -> str:
     """Generate speech using ElevenLabs and return base64 encoded audio"""
     try:
-        # Generate audio using ElevenLabs
-        audio = elevenlabs_client.generate(
+        # Generate audio using ElevenLabs (updated method usage)
+        audio = elevenlabs_client.text_to_speech.convert(
             text=text,
-            voice=voice_id,
-            model="eleven_multilingual_v2"
+            voice_id=voice_id,
+            model_id="eleven_multilingual_v2",
+            output_format="mp3_44100_128"
         )
         
         # Convert audio generator to bytes
