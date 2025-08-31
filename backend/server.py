@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 class VoiceSearchRequest(BaseModel):
     query: str = Field(description="Search query from voice input")
     language: str = Field(default="en", description="Language code for TTS")
-    voice_id: Optional[str] = Field(default="21m00Tcm4TlmVhkVyaZB", description="ElevenLabs voice ID")
+    voice_id: Optional[str] = Field(default="21m00Tcm4TlvDq8ikWAM", description="ElevenLabs voice ID")
 
 class SearchResult(BaseModel):
     title: str
