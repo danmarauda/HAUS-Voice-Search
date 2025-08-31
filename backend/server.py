@@ -58,7 +58,7 @@ class VoiceSearchResponse(BaseModel):
 class TTSRequest(BaseModel):
     text: str
     language: str = "en"
-    voice_id: str = "21m00Tcm4TlmVhkVyaZB"
+    voice_id: str = "21m00Tcm4TlvDq8ikWAM"
 
 class ScrapeRequest(BaseModel):
     query: str
