@@ -284,7 +284,7 @@ async def get_available_voices():
             "success": False,
             "voices": [
                 {
-                    "voice_id": "21m00Tcm4TlmVhkVyaZB",
+                    "voice_id": "21m00Tcm4TlvDq8ikWAM",
                     "name": "Rachel",
                     "category": "premade",
                     "description": "Default English voice"
