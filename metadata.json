@@ -1,0 +1,7 @@
+{
+  "name": "HAUS Voice Search",
+  "description": "HAUS is a sophisticated real estate platform to find your next home with confidence. Explore curated properties, take virtual tours, and get expert support from offer to close.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
