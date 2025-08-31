@@ -114,10 +114,10 @@ async def search_and_scrape(query: str, max_results: int = 5) -> List[SearchResu
         
         for url in search_urls[:max_results]:
             try:
-                # Use Firecrawl to scrape the content
-                scrape_result = firecrawl_client.scrape_url(
+                # Use Firecrawl to scrape the content (updated method name)
+                scrape_result = firecrawl_client.scrape(
                     url,
-                    params={"formats": ["markdown", "html"]}
+                    formats=["markdown", "html"]
                 )
                 
                 if scrape_result and scrape_result.get("markdown"):
