@@ -74,9 +74,9 @@ async def initialize_apis():
             api_key=os.getenv("ELEVENLABS_API_KEY")
         )
         
-        # Firecrawl client
-        from firecrawl import Firecrawl
-        firecrawl_client = Firecrawl(
+        # Firecrawl client (updated import)
+        from firecrawl import FirecrawlApp
+        firecrawl_client = FirecrawlApp(
             api_key=os.getenv("FIRECRAWL_API_KEY"),
             api_url=os.getenv("FIRECRAWL_API_URL", "https://api.firecrawl.dev")
         )
