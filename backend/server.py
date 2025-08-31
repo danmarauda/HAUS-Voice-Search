@@ -120,9 +120,9 @@ async def search_and_scrape(query: str, max_results: int = 5) -> List[SearchResu
                     formats=["markdown", "html"]
                 )
                 
-                if scrape_result and scrape_result.get("markdown"):
-                    content = scrape_result.get("markdown", "")
-                    title = scrape_result.get("metadata", {}).get("title", "Search Result")
+                if scrape_result and hasattr(scrape_result, 'markdown') and scrape_result.markdown:
+                    content = scrape_result.markdown
+                    title = scrape_result.metadata.title if hasattr(scrape_result, 'metadata') and hasattr(scrape_result.metadata, 'title') else "Search Result"
                     
                     # Create a summary (first 200 characters)
                     summary = content[:200] + "..." if len(content) > 200 else content
