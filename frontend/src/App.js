@@ -13,7 +13,7 @@ const VoiceSearch = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [audioUrl, setAudioUrl] = useState(null);
   const [searchHistory, setSearchHistory] = useState([]);
-  const [selectedVoice, setSelectedVoice] = useState('21m00Tcm4TlmVhkVyaZB');
+  const [selectedVoice, setSelectedVoice] = useState('21m00Tcm4TlvDq8ikWAM');
   const [availableVoices, setAvailableVoices] = useState([]);
   
   const recognitionRef = useRef(null);
