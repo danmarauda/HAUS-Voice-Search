@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import FeaturedListings from './components/FeaturedListings';
@@ -10,6 +10,27 @@ import { type Property } from './types';
 
 const App: React.FC = () => {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [savedProperties, setSavedProperties] = useState<Set<number>>(new Set());
+
+  useEffect(() => {
+    const storedSaved = localStorage.getItem('haus_saved_properties');
+    if (storedSaved) {
+      setSavedProperties(new Set(JSON.parse(storedSaved)));
+    }
+  }, []);
+
+  const toggleSavedProperty = (propertyId: number) => {
+    setSavedProperties(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(propertyId)) {
+        newSet.delete(propertyId);
+      } else {
+        newSet.add(propertyId);
+      }
+      localStorage.setItem('haus_saved_properties', JSON.stringify(Array.from(newSet)));
+      return newSet;
+    });
+  };
 
   const handleOpenPropertyModal = (property: Property) => {
     setSelectedProperty(property);
@@ -30,12 +51,27 @@ const App: React.FC = () => {
 
       <Header />
       <main>
-        <Hero onPropertyClick={handleOpenPropertyModal} />
-        <FeaturedListings onPropertyClick={handleOpenPropertyModal} />
+        <Hero 
+          onPropertyClick={handleOpenPropertyModal} 
+          savedProperties={savedProperties}
+          onToggleSave={toggleSavedProperty}
+        />
+        <FeaturedListings 
+          onPropertyClick={handleOpenPropertyModal}
+          savedProperties={savedProperties}
+          onToggleSave={toggleSavedProperty}
+        />
         <About />
       </main>
       <Footer />
-      {selectedProperty && <PropertyDetailModal property={selectedProperty} onClose={handleClosePropertyModal} />}
+      {selectedProperty && (
+        <PropertyDetailModal 
+          property={selectedProperty} 
+          onClose={handleClosePropertyModal}
+          savedProperties={savedProperties}
+          onToggleSave={toggleSavedProperty}
+        />
+      )}
     </>
   );
 };

@@ -1,127 +1,65 @@
-import React, { useState, useEffect, useRef } from 'react';
+
+import React, { useState } from 'react';
 import VoiceCopilot from './VoiceCopilot';
 import PropertyCard from './PropertyCard';
-import { type Property, type SearchParams, generateMockResults } from '../types';
-import AIVoice from './AIVoice';
-import { 
-  MapPinIcon, 
-  HomeIcon, 
-  CalendarIcon, 
-  ShieldCheckIcon,
-  SearchIcon,
-  WavesIcon,
-  TreesIcon,
-  CarIcon,
-  GymIcon,
-  FireplaceIcon,
-  BalconyIcon,
-  Building2Icon,
-  LaundryIcon,
-  SnowflakeIcon,
-  PawPrintIcon,
-  UserIcon,
-  SlidersHorizontalIcon,
-  BedIcon,
-  BathIcon,
-  RulerIcon,
-  ZapIcon,
-  BriefcaseIcon,
-  ClapperboardIcon,
-  WineIcon,
-  AccessibilityIcon,
-  FenceIcon,
-  SofaIcon,
-  WarehouseIcon,
-  SunIcon,
-  ThermometerIcon,
-  LayersIcon,
-  UtensilsIcon,
-  ArrowUpDownIcon,
-  EvStationIcon,
-} from './IconComponents';
-import CustomDropdown from './CustomDropdown';
+import { type Property, type SearchParams } from '../types';
 
 interface HeroProps {
   onPropertyClick: (property: Property) => void;
+  savedProperties: Set<number>;
+  onToggleSave: (id: number) => void;
 }
 
-const searchExamples = [
-    "Find modern homes in Melbourne with a pool.",
-    "Apartments in Sydney with a city view for rent under $5,000 a month.",
-    "A house in Brisbane with a garden and a garage.",
-    "Pet-friendly townhouses in Perth near the waterfront.",
-    "Three bedroom house for sale in Adelaide.",
-    "Luxury penthouse with a gym and doorman in Gold Coast.",
-    "A quiet two-bedroom apartment with a balcony in Canberra.",
-    "Find me a property with AC and parking."
-];
-
-const Hero: React.FC<HeroProps> = ({ onPropertyClick }) => {
-  const [isVoiceSearchActive, setIsVoiceSearchActive] = useState(false);
+const Hero: React.FC<HeroProps> = ({ onPropertyClick, savedProperties, onToggleSave }) => {
   const [searchResults, setSearchResults] = useState<Property[]>([]);
   
-  // State for advanced filters
-  const [listingType, setListingType] = useState<'For Sale' | 'For Rent'>('For Sale');
-  const [propertyType, setPropertyType] = useState('any');
-  const [minPrice, setMinPrice] = useState('any');
-  const [maxPrice, setMaxPrice] = useState('any');
-  const [bedrooms, setBedrooms] = useState('any');
-  const [bathrooms, setBathrooms] = useState('any');
-  const [minSquareFootage, setMinSquareFootage] = useState('any');
-  const [maxSquareFootage, setMaxSquareFootage] = useState('any');
-  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
-  
-  const [lastVoiceSearchParams, setLastVoiceSearchParams] = useState<SearchParams | null>(null);
-  const [glowingFilters, setGlowingFilters] = useState<string[]>([]);
-  
-  // State for typing animation
-  const [exampleIndex, setExampleIndex] = useState(0);
-  const [subIndex, setSubIndex] = useState(0);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [animatedText, setAnimatedText] = useState('');
-
-  useEffect(() => {
-    if (isDeleting) {
-      if (subIndex > 0) {
-        const timer = setTimeout(() => setSubIndex(subIndex - 1), 10);
-        return () => clearTimeout(timer);
-      } else {
-        setIsDeleting(false);
-        setExampleIndex((prev) => (prev + 1) % searchExamples.length);
-        return;
-      }
-    }
-
-    if (subIndex < searchExamples[exampleIndex].length) {
-      const timer = setTimeout(() => setSubIndex(subIndex + 1), 15);
-      return () => clearTimeout(timer);
-    }
-
-    const timer = setTimeout(() => setIsDeleting(true), 250);
-    return () => clearTimeout(timer);
-
-  }, [subIndex, isDeleting, exampleIndex]);
-  
-  useEffect(() => {
-      setAnimatedText(searchExamples[exampleIndex].substring(0, subIndex));
-  }, [subIndex, exampleIndex]);
-
-
   const handleShowResults = (results: Property[], params: SearchParams) => {
     setSearchResults(results);
-    setLastVoiceSearchParams(params);
-    setIsVoiceSearchActive(false);
   };
 
-  const handleReturnFromVoiceSearch = () => {
-    setSearchResults([]);
-    setIsVoiceSearchActive(false);
-    
-    if (lastVoiceSearchParams) {
-        setListingType(lastVoiceSearchParams.listingType ?? 'For Sale');
-        setPropertyType(lastVoiceSearchParams.propertyType ?? 'any');
-        setMinPrice(lastVoiceSearchParams.priceMin?.toString() ?? 'any');
-        setMaxPrice(lastVoiceSearchParams.priceMax?.toString() ?? 'any');
-        setBedrooms(lastVoiceSearchParams.bedroomsMin?.toString() ?? 'any');
-        setBathrooms(lastVoiceSearchParams.bathroomsMin?.toString() ?? 'any');
-        setMinSquareFootage(lastVoiceSearchParams.square
+  return (
+      <section className="max-w-7xl sm:px-6 mx-auto mb-8 px-4 relative z-10">
+          <>
+            <div className="pt-24 sm:pt-32 text-center">
+              <div className="max-w-xl mx-auto">
+                <h1 className="text-4xl sm:text-5xl font-geist tracking-tighter font-medium text-transparent bg-clip-text bg-gradient-to-br from-white to-neutral-400">
+                  Search with your voice
+                </h1>
+                <p className="mt-4 text-base text-neutral-400">
+                  Just tell us what you're looking for.
+                </p>
+              </div>
+
+              <div className="mt-10 max-w-7xl mx-auto">
+                <div 
+                  className="bg-neutral-950/70 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl w-full h-[70vh] max-h-[700px] min-h-[600px] overflow-hidden"
+                >
+                  <VoiceCopilot onResults={handleShowResults} />
+                </div>
+              </div>
+            </div>
+
+            {searchResults.length > 0 && (
+              <div className="mt-16 animate-scale-up" style={{ animationDuration: '0.5s' }}>
+                <h2 className="text-xl sm:text-2xl text-center text-neutral-100 font-geist tracking-tighter font-medium">
+                  Your Search Results
+                </h2>
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {searchResults.map(property => (
+                    <PropertyCard 
+                      key={property.id} 
+                      property={property} 
+                      onButtonClick={onPropertyClick}
+                      savedProperties={savedProperties}
+                      onToggleSave={onToggleSave}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+      </section>
+  );
+};
+
+export default Hero;

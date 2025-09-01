@@ -6,6 +6,8 @@ import { MapPinIcon, EyeIcon, HeartIcon, RouteIcon } from './IconComponents';
 interface PropertyCardProps {
   property: Property;
   onButtonClick: (property: Property) => void;
+  savedProperties: Set<number>;
+  onToggleSave: (id: number) => void;
 }
 
 const tagStyles = {
@@ -14,10 +16,11 @@ const tagStyles = {
   'open-house': 'bg-white/90 text-indigo-900',
 };
 
-const PropertyCard: React.FC<PropertyCardProps> = ({ property, onButtonClick }) => {
-  const { title, location, price, details, imageUrl, tag, button } = property;
+const PropertyCard: React.FC<PropertyCardProps> = ({ property, onButtonClick, savedProperties, onToggleSave }) => {
+  const { id, title, location, price, details, imageUrl, tag, button } = property;
   
   const ButtonIcon = button.icon === 'eye' ? EyeIcon : RouteIcon;
+  const isSaved = savedProperties.has(id);
 
   return (
     <article className="group overflow-hidden bg-neutral-900/90 border border-white/10 rounded-lg h-full flex flex-col">
@@ -51,8 +54,12 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onButtonClick }) 
             <ButtonIcon className="w-3.5 h-3.5 stroke-[1.5]" />
             {button.text}
           </button>
-          <button className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-white/10 text-neutral-200 hover:bg-white/10">
-            <HeartIcon className="w-4 h-4 stroke-[1.5]" />
+          <button 
+            onClick={() => onToggleSave(id)}
+            aria-label={isSaved ? "Unsave property" : "Save property"}
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-white/10 text-neutral-200 hover:bg-white/10 transition-colors"
+          >
+            <HeartIcon className={`w-4 h-4 stroke-[1.5] transition-colors ${isSaved ? 'fill-red-500 stroke-red-500' : ''}`} />
           </button>
         </div>
       </div>

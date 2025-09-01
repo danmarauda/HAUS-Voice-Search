@@ -7,48 +7,48 @@ import { ArrowUpRightIcon } from './IconComponents';
 const featuredProperties: Property[] = [
   {
     id: 1,
-    title: 'Oceanview Modern Villa',
-    location: 'Malibu, CA',
-    price: '$2.8M',
-    details: '4 bd • 3 ba • 2,800 sqft',
-    imageUrl: 'https://picsum.photos/800/600?random=11',
-    description: 'Breathtaking ocean views from every room. This modern villa in Malibu features floor-to-ceiling windows, an infinity pool, and direct beach access. An entertainer\'s dream with a gourmet kitchen and expansive outdoor living spaces.',
+    title: 'Bondi Beachfront Penthouse',
+    location: 'Sydney, NSW',
+    price: '$4.5M',
+    details: '3 bd • 3 ba • 250 sqm',
+    imageUrl: 'https://picsum.photos/800/600?random=21',
+    description: 'Experience the ultimate coastal lifestyle in this exquisite Bondi penthouse. Offering panoramic ocean views, designer interiors, and a spacious terrace perfect for entertaining. Steps away from the iconic Bondi Beach, cafes, and boutiques.',
     tag: { text: 'New', type: 'new' },
     tourAvailable: true,
     button: { text: 'Virtual tour', icon: 'eye' }
   },
   {
     id: 2,
-    title: 'Skyline Penthouse Suite',
-    location: 'Manhattan, NY',
-    price: '$5.2M',
-    details: '5 bd • 4 ba • 4,500 sqft',
-    imageUrl: 'https://picsum.photos/800/600?random=12',
-    description: 'A pinnacle of luxury living in Manhattan. This penthouse offers 360-degree views of the city skyline, a private rooftop terrace, and bespoke interiors designed by a world-renowned architect. Includes access to five-star building amenities.',
+    title: 'Chic Laneway Warehouse Conversion',
+    location: 'Melbourne, VIC',
+    price: '$2.1M',
+    details: '2 bd • 2 ba • 180 sqm',
+    imageUrl: 'https://picsum.photos/800/600?random=22',
+    description: 'A stunning warehouse conversion tucked away in one of Melbourne\'s iconic laneways. Featuring soaring ceilings, exposed brickwork, and industrial-chic finishes. This unique home offers a sophisticated urban sanctuary in the heart of the CBD.',
     tag: { text: 'Premium', type: 'premium' },
     tourAvailable: true,
     button: { text: 'Virtual tour', icon: 'eye' }
   },
   {
     id: 3,
-    title: 'Contemporary Townhouse',
-    location: 'Austin, TX',
-    price: '$1.15M',
-    details: '3 bd • 3 ba • 1,900 sqft',
-    imageUrl: 'https://picsum.photos/800/600?random=13',
-    description: 'Sleek and stylish townhouse in the vibrant heart of Austin. This home features an open-concept living area, a modern kitchen with high-end appliances, and a private backyard patio perfect for relaxing or entertaining.',
+    title: 'Classic Queenslander Home',
+    location: 'Brisbane, QLD',
+    price: '$1.75M',
+    details: '4 bd • 3 ba • 400 sqm',
+    imageUrl: 'https://picsum.photos/800/600?random=23',
+    description: 'A beautifully restored Queenslander combining classic charm with modern luxury. This family home boasts wide verandas, polished timber floors, and a lush, subtropical garden with a pool. An entertainer\'s dream in a sought-after suburb.',
     tag: { text: 'Open House', type: 'open-house' },
     tourAvailable: false,
     button: { text: 'Directions', icon: 'route' }
   },
    {
     id: 4,
-    title: 'Secluded Forest Retreat',
-    location: 'Asheville, NC',
-    price: '$1.9M',
-    details: '5 bd • 4 ba • 3,500 sqft',
-    imageUrl: 'https://picsum.photos/800/600?random=14',
-    description: 'Escape to this private retreat nestled in the Blue Ridge Mountains. Surrounded by nature, this home offers tranquility and luxury with its custom woodwork, stone fireplaces, and wrap-around porch overlooking a serene forest.',
+    title: 'Riverside Architectural Masterpiece',
+    location: 'Perth, WA',
+    price: '$3.2M',
+    details: '5 bd • 4 ba • 550 sqm',
+    imageUrl: 'https://picsum.photos/800/600?random=24',
+    description: 'An architectural statement on the banks of the Swan River. This magnificent home features cutting-edge design, an infinity pool, private jetty, and breathtaking water views from every room. The epitome of modern luxury in Perth.',
     tag: { text: 'Premium', type: 'premium' },
     tourAvailable: true,
     button: { text: 'Virtual tour', icon: 'eye' }
@@ -57,9 +57,11 @@ const featuredProperties: Property[] = [
 
 interface FeaturedListingsProps {
   onPropertyClick: (property: Property) => void;
+  savedProperties: Set<number>;
+  onToggleSave: (id: number) => void;
 }
 
-const FeaturedListings: React.FC<FeaturedListingsProps> = ({ onPropertyClick }) => {
+const FeaturedListings: React.FC<FeaturedListingsProps> = ({ onPropertyClick, savedProperties, onToggleSave }) => {
   return (
     <section className="max-w-7xl sm:px-6 mt-10 mx-auto mb-8 px-4">
       <div className="relative sm:mt-12 overflow-hidden shadow-[0px_0px_0px_1px_rgba(255,255,255,0.06),0px_1px_1px_-0.5px_rgba(0,0,0,0.3),0px_12px_24px_-12px_rgba(0,0,0,0.5)] bg-black/80 border-white/10 border rounded-3xl backdrop-blur">
@@ -77,16 +79,16 @@ const FeaturedListings: React.FC<FeaturedListingsProps> = ({ onPropertyClick }) 
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 h-[80vh] max-h-[900px] min-h-[600px]">
             <div className="lg:col-span-2 lg:row-span-2">
-              <PropertyCard property={featuredProperties[0]} onButtonClick={onPropertyClick} />
+              <PropertyCard property={featuredProperties[0]} onButtonClick={onPropertyClick} savedProperties={savedProperties} onToggleSave={onToggleSave} />
             </div>
             <div className="lg:col-span-1 lg:row-span-1">
-              <PropertyCard property={featuredProperties[1]} onButtonClick={onPropertyClick} />
+              <PropertyCard property={featuredProperties[1]} onButtonClick={onPropertyClick} savedProperties={savedProperties} onToggleSave={onToggleSave} />
             </div>
             <div className="lg:col-span-1 lg:row-span-1">
-              <PropertyCard property={featuredProperties[2]} onButtonClick={onPropertyClick} />
+              <PropertyCard property={featuredProperties[2]} onButtonClick={onPropertyClick} savedProperties={savedProperties} onToggleSave={onToggleSave} />
             </div>
             <div className="md:col-span-2 lg:col-span-2 lg:row-span-1">
-              <PropertyCard property={featuredProperties[3]} onButtonClick={onPropertyClick} />
+              <PropertyCard property={featuredProperties[3]} onButtonClick={onPropertyClick} savedProperties={savedProperties} onToggleSave={onToggleSave} />
             </div>
           </div>
         </div>

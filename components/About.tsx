@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ArrowRightIcon } from './IconComponents';
 
@@ -24,11 +25,10 @@ const About: React.FC = () => {
                 </div>
                 <h2 className="mt-2 text-2xl sm:text-3xl text-neutral-100 font-geist tracking-tight font-medium">Our Story</h2>
                 <p className="mt-3 text-sm sm:text-base leading-relaxed text-neutral-400 font-geist">
-                  HAUS began with a simple idea: make finding an extraordinary home feel effortless. What started as a small collective of agents and designers has grown into a nationwide network known for precision, transparency, and taste. 
-                  From beachfront villas to skyline penthouses, we curate every listing, verify every document, and guide you from first tour to final signature.
+                  HAUS began with a simple idea: make finding an extraordinary home in Australia feel effortless. What started as a small collective of agents and designers in Sydney has grown into a nationwide network known for precision, transparency, and taste. From sun-drenched Queenslanders to chic Melbourne laneway apartments, we curate every listing, verify every document, and guide you from the first inspection to the final signature.
                 </p>
                 <p className="mt-3 text-sm sm:text-base leading-relaxed text-neutral-400 font-geist">
-                  Today, our platform blends expert local insight with real‑time data, immersive media, and concierge‑level service—so you can move with confidence.
+                  Today, our platform blends expert local insight with real-time property data, immersive media, and concierge-level service—so you can move with confidence.
                 </p>
 
                 <a href="#" className="mt-4 inline-flex items-center gap-2 text-sm font-medium tracking-tight text-neutral-200 bg-white/5 hover:bg-white/10 rounded-lg px-3 py-1.5 border border-white/10">
@@ -41,15 +41,15 @@ const About: React.FC = () => {
             <div className="lg:col-span-1">
               <ul className="space-y-6 sm:space-y-8">
                 <li>
-                  <div className="text-4xl sm:text-5xl text-neutral-100 font-geist tracking-tight font-medium">12,000+</div>
+                  <div className="text-4xl sm:text-5xl text-neutral-100 font-geist tracking-tight font-medium">15,000+</div>
                   <p className="text-[11px] tracking-wider uppercase text-neutral-400 mt-1 font-geist">Active Listings</p>
                 </li>
                 <li>
-                  <div className="text-4xl sm:text-5xl text-neutral-100 font-geist tracking-tight font-medium">28</div>
+                  <div className="text-4xl sm:text-5xl text-neutral-100 font-geist tracking-tight font-medium">All Major Capitals</div>
                   <p className="text-[11px] tracking-wider uppercase text-neutral-400 mt-1 font-geist">Markets Served</p>
                 </li>
                 <li>
-                  <div className="text-4xl sm:text-5xl text-neutral-100 font-geist tracking-tight font-medium">350+</div>
+                  <div className="text-4xl sm:text-5xl text-neutral-100 font-geist tracking-tight font-medium">500+</div>
                   <p className="text-[11px] tracking-wider uppercase text-neutral-400 mt-1 font-geist">Virtual Tours</p>
                 </li>
                 <li>

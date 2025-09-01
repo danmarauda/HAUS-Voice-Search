@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Logo, ArrowRightIcon } from './IconComponents';
 
@@ -22,7 +23,7 @@ const Footer: React.FC = () => {
                 <span className="font-geist">Contact us</span>
                 <ArrowRightIcon className="w-4 h-4 stroke-[1.5]" />
               </a>
-              <div className="text-xs text-neutral-500 font-geist">support@haus.com</div>
+              <div className="text-xs text-neutral-500 font-geist">support@haus.com.au</div>
             </div>
 
             <div>
@@ -60,7 +61,7 @@ const Footer: React.FC = () => {
 
           <div className="mt-6 pt-6 border-t border-white/10 flex flex-col md:flex-row md:items-center gap-3 md:justify-between">
             <nav className="flex flex-wrap gap-x-4 gap-y-2 text-[11px] text-neutral-400 font-geist">
-              <a href="#" className="hover:text-neutral-200">Fair Housing Statement</a>
+              <a href="#" className="hover:text-neutral-200">Real Estate Code of Conduct</a>
               <span className="text-neutral-700">|</span>
               <a href="#" className="hover:text-neutral-200">Privacy Policy</a>
               <span className="text-neutral-700">|</span>
@@ -68,11 +69,11 @@ const Footer: React.FC = () => {
               <span className="text-neutral-700">|</span>
               <a href="#" className="hover:text-neutral-200">Accessibility</a>
               <span className="text-neutral-700">|</span>
-              <a href="#" className="hover:text-neutral-200">DMCA</a>
+              <a href="#" className="hover:text-neutral-200">Copyright Notice</a>
               <span className="text-neutral-700">|</span>
               <a href="#" className="hover:text-neutral-200">Sitemap</a>
             </nav>
-            <div className="text-[11px] text-neutral-500 font-geist">© 2025 HAUS, Inc. All rights reserved.</div>
+            <div className="text-[11px] text-neutral-500 font-geist">© 2024 HAUS Australia Pty Ltd. All rights reserved.</div>
           </div>
         </div>
       </div>
