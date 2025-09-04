@@ -207,3 +207,31 @@ export const ArrowUpDownIcon: React.FC<{ className?: string }> = ({ className })
 export const EvStationIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M5 20V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v14"></path><path d="M5 12H3a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h2"></path><path d="M12 12V8l-2 4h4l-2 4v-4"></path></svg>
 );
+
+export const UsersIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+);
+
+export const BookOpenIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+);
+
+export const MountainIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m8 3 4 8 5-5 5 15H2L8 3z"></path></svg>
+);
+
+export const HotTubIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20 18H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2Z"></path><path d="M8 12a1 1 0 0 0-1-1 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 1 1 0 0 0 1-1Z"></path><path d="M13 12a1 1 0 0 0-1-1 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 1 1 0 0 0 1-1Z"></path><path d="M18 12a1 1 0 0 0-1-1 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 1 1 0 0 0 1-1Z"></path><path d="M16 6.1C16 5 15.1 4 14 4s-2 .8-2 2.1c0 1.2 2 2.9 2 2.9s2-1.7 2-2.9Z"></path><path d="M8 6.1C8 5 7.1 4 6 4s-2 .8-2 2.1c0 1.2 2 2.9 2 2.9s2-1.7 2-2.9Z"></path></svg>
+);
+
+export const StarIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+);
+
+export const TagIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12.586 2.586a2 2 0 0 0-2.828 0L2 10.172V20h9.828l7.586-7.586a2 2 0 0 0 0-2.828z"></path><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle></svg>
+);
+
+export const GavelIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m9 9 5 5"/><path d="m13 5-8 8"/><path d="M4 14.5a5 5 0 0 0 7 0l5.5-5.5a5 5 0 0 0-7-7L4 7.5a5 5 0 0 0 0 7z"/></svg>
+);

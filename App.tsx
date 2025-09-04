@@ -6,11 +6,19 @@ import FeaturedListings from './components/FeaturedListings';
 import About from './components/About';
 import Footer from './components/Footer';
 import PropertyDetailModal from './components/PropertyDetailModal';
+import Toast from './components/Toast';
 import { type Property } from './types';
+
+interface ToastMessage {
+  id: number;
+  message: string;
+  type: 'success' | 'info';
+}
 
 const App: React.FC = () => {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [savedProperties, setSavedProperties] = useState<Set<number>>(new Set());
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   useEffect(() => {
     const storedSaved = localStorage.getItem('haus_saved_properties');
@@ -18,8 +26,18 @@ const App: React.FC = () => {
       setSavedProperties(new Set(JSON.parse(storedSaved)));
     }
   }, []);
+  
+  const addToast = (message: string, type: 'success' | 'info') => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, type }]);
+  };
+
+  const removeToast = (id: number) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  };
 
   const toggleSavedProperty = (propertyId: number) => {
+    const wasSaved = savedProperties.has(propertyId);
     setSavedProperties(prev => {
       const newSet = new Set(prev);
       if (newSet.has(propertyId)) {
@@ -30,6 +48,12 @@ const App: React.FC = () => {
       localStorage.setItem('haus_saved_properties', JSON.stringify(Array.from(newSet)));
       return newSet;
     });
+    
+    if (!wasSaved) {
+      addToast('Property saved!', 'success');
+    } else {
+      addToast('Removed from saved properties.', 'info');
+    }
   };
 
   const handleOpenPropertyModal = (property: Property) => {
@@ -72,6 +96,11 @@ const App: React.FC = () => {
           onToggleSave={toggleSavedProperty}
         />
       )}
+      <div className="fixed bottom-5 right-5 z-[100] space-y-2">
+        {toasts.map(toast => (
+            <Toast key={toast.id} {...toast} onClose={() => removeToast(toast.id)} />
+        ))}
+      </div>
     </>
   );
 };

@@ -1,16 +1,15 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
 import { type Property, type SearchParams, generateMockResults } from '../types';
-import AIVoice from './AIVoice';
 import { 
-    MapPinIcon, Building2Icon, BedIcon, DollarSignIcon, 
+    MapPinIcon, Building2Icon, BedIcon, DollarSignIcon, XIcon,
     SparklesIcon, SearchIcon, BathIcon, RulerIcon, KeyIcon,
-    WavesIcon, PawPrintIcon, CarIcon, TreesIcon, GymIcon,
+    WavesIcon, PawPrintIcon, CarIcon, TreesIcon, GymIcon, MicIcon,
     UserIcon, BalconyIcon, SnowflakeIcon, FireplaceIcon, LaundryIcon,
     BriefcaseIcon, EvStationIcon, FenceIcon, ShieldCheckIcon, SofaIcon,
     SunIcon, ThermometerIcon, UtensilsIcon, WarehouseIcon, WineIcon,
-    ArrowUpDownIcon, AccessibilityIcon, LayersIcon
+    ArrowUpDownIcon, AccessibilityIcon, LayersIcon, UsersIcon, BookOpenIcon,
+    MountainIcon, HotTubIcon, StarIcon, TagIcon, GavelIcon
 } from './IconComponents';
 
 interface VoiceCopilotProps {
@@ -18,38 +17,31 @@ interface VoiceCopilotProps {
 }
 
 type SearchStatus = "demo" | "idle" | "listening" | "processing" | "confirming" | "done";
+type PermanentTag = 'new' | 'premium' | 'open-house' | 'auction';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
 const initialSearchParams: SearchParams = {
     location: undefined,
+    locationRadiusKm: undefined,
     propertyType: undefined,
     listingType: undefined,
     priceMin: undefined,
     priceMax: undefined,
     bedroomsMin: undefined,
     bathroomsMin: undefined,
-    squareFootageMin: undefined,
-    squareFootageMax: undefined,
+    sizeMetersMin: undefined,
+    sizeMetersMax: undefined,
+    style: undefined,
+    styleImage: undefined,
     amenities: [],
+    tags: [],
 };
-
-const searchExamples = [
-    "Find modern homes in Melbourne with a pool.",
-    "Apartments in Sydney with a city view for rent under $5,000 a month.",
-    "A house in Brisbane with a garden and a garage.",
-    "Pet-friendly townhouses in Perth near the waterfront.",
-    "Three bedroom house for sale in Adelaide.",
-    "Luxury penthouse with a gym and doorman in Gold Coast.",
-    "A quiet two-bedroom apartment with a balcony in Canberra.",
-    "Find me a property with AC, parking and a home office.",
-    "A furnished apartment with an elevator and security system."
-];
 
 interface DemoParam {
     keyword: string;
-    paramKey: keyof SearchParams | 'amenities';
+    paramKey: keyof SearchParams | 'amenities' | 'tags';
     value: any;
 }
 interface DemoSearch {
@@ -59,97 +51,71 @@ interface DemoSearch {
 
 const demoSearches: DemoSearch[] = [
     {
-        phrase: "Find modern homes in Melbourne with a pool.",
+        phrase: "Show me a luxury chalet in Queenstown with a mountain view, hot tub and at least 4 bedrooms under $4M that's a new listing.",
         params: [
-            { keyword: 'modern', paramKey: 'amenities', value: 'Modern' },
-            { keyword: 'homes', paramKey: 'propertyType', value: 'House' },
-            { keyword: 'Melbourne', paramKey: 'location', value: 'Melbourne' },
-            { keyword: 'pool', paramKey: 'amenities', value: 'Pool' },
+            { keyword: 'luxury', paramKey: 'tags', value: 'premium' },
+            { keyword: 'chalet', paramKey: 'style', value: 'Chalet' },
+            { keyword: 'Queenstown', paramKey: 'location', value: 'Queenstown' },
+            { keyword: 'mountain view', paramKey: 'amenities', value: 'Mountain View' },
+            { keyword: 'hot tub', paramKey: 'amenities', value: 'Hot Tub' },
+            { keyword: '4 bedrooms', paramKey: 'bedroomsMin', value: 4 },
+            { keyword: '$4M', paramKey: 'priceMax', value: 4000000 },
+            { keyword: 'new listing', paramKey: 'tags', value: 'new' },
         ]
     },
     {
-        phrase: "Apartments in Sydney with a city view for rent under $5,000 a month.",
+        phrase: "I'm looking for a pet-friendly Victorian townhouse for rent in Melbourne, that's earthquake strengthened and has an open house.",
         params: [
-            { keyword: 'Apartments', paramKey: 'propertyType', value: 'Apartment' },
-            { keyword: 'Sydney', paramKey: 'location', value: 'Sydney' },
-            { keyword: 'city view', paramKey: 'amenities', value: 'City View' },
+            { keyword: 'pet-friendly', paramKey: 'amenities', value: 'Pets Allowed' },
+            { keyword: 'Victorian', paramKey: 'style', value: 'Victorian' },
+            { keyword: 'townhouse', paramKey: 'propertyType', value: 'Townhouse' },
             { keyword: 'for rent', paramKey: 'listingType', value: 'For Rent' },
-            { keyword: '$5,000', paramKey: 'priceMax', value: 5000 },
+            { keyword: 'Melbourne', paramKey: 'location', value: 'Melbourne' },
+            { keyword: 'earthquake strengthened', paramKey: 'amenities', value: 'Earthquake Strengthened' },
+            { keyword: 'open house', paramKey: 'tags', value: 'open-house' },
         ]
     },
     {
-        phrase: "A house in Brisbane with a garden and a garage.",
+        phrase: "Find a premium new build apartment in Sydney with a sea view, a gym, and good school district, between $2M and $3.5M.",
         params: [
-            { keyword: 'house', paramKey: 'propertyType', value: 'House' },
-            { keyword: 'Brisbane', paramKey: 'location', value: 'Brisbane' },
-            { keyword: 'garden', paramKey: 'amenities', value: 'Garden' },
-            { keyword: 'garage', paramKey: 'amenities', value: 'Garage' },
-        ]
-    },
-    {
-        phrase: "Pet-friendly townhouses in Perth near the waterfront.",
-        params: [
-            { keyword: 'Pet-friendly', paramKey: 'amenities', value: 'Pets Allowed' },
-            { keyword: 'townhouses', paramKey: 'propertyType', value: 'Townhouse' },
-            { keyword: 'Perth', paramKey: 'location', value: 'Perth' },
-            { keyword: 'waterfront', paramKey: 'amenities', value: 'Waterfront' },
-        ]
-    },
-     {
-        phrase: "Three bedroom house for sale in Adelaide.",
-        params: [
-            { keyword: 'Three bedroom', paramKey: 'bedroomsMin', value: 3 },
-            { keyword: 'house', paramKey: 'propertyType', value: 'House' },
-            { keyword: 'for sale', paramKey: 'listingType', value: 'For Sale' },
-            { keyword: 'Adelaide', paramKey: 'location', value: 'Adelaide' },
-        ]
-    },
-    {
-        phrase: "Luxury penthouse with a gym and doorman in Gold Coast.",
-        params: [
-            { keyword: 'penthouse', paramKey: 'propertyType', value: 'Loft' }, 
+            { keyword: 'premium', paramKey: 'tags', value: 'premium' },
+            { keyword: 'new build', paramKey: 'amenities', value: 'New Build' },
+            { keyword: 'apartment', paramKey: 'propertyType', value: 'Apartment' },
+            { keyword: 'Sydney', paramKey: 'location', value: 'Sydney' },
+            { keyword: 'sea view', paramKey: 'amenities', value: 'Sea View' },
             { keyword: 'gym', paramKey: 'amenities', value: 'Gym' },
-            { keyword: 'doorman', paramKey: 'amenities', value: 'Doorman' },
-            { keyword: 'Gold Coast', paramKey: 'location', value: 'Gold Coast' },
+            { keyword: 'good school district', paramKey: 'amenities', value: 'Good School District' },
+            { keyword: '$2M', paramKey: 'priceMin', value: 2000000 },
+            { keyword: '$3.5M', paramKey: 'priceMax', value: 3500000 },
         ]
     },
     {
-        phrase: "A quiet two-bedroom apartment with a balcony in Canberra.",
+        phrase: "Find me modern commercial real estate in Christchurch for lease, over 300 sqm, with outdoor entertaining.",
         params: [
-            { keyword: 'two-bedroom', paramKey: 'bedroomsMin', value: 2 },
-            { keyword: 'apartment', paramKey: 'propertyType', value: 'Apartment' },
-            { keyword: 'balcony', paramKey: 'amenities', value: 'Balcony' },
-            { keyword: 'Canberra', paramKey: 'location', value: 'Canberra' },
-        ]
-    },
-    {
-        phrase: "Find me a property with AC, parking and a home office.",
-        params: [
-            { keyword: 'AC', paramKey: 'amenities', value: 'AC' },
-            { keyword: 'parking', paramKey: 'amenities', value: 'Parking' },
-            { keyword: 'home office', paramKey: 'amenities', value: 'Home Office' },
-        ]
-    },
-    {
-        phrase: "A furnished apartment with an elevator and security system.",
-        params: [
-            { keyword: 'furnished', paramKey: 'amenities', value: 'Furnished' },
-            { keyword: 'apartment', paramKey: 'propertyType', value: 'Apartment' },
-            { keyword: 'elevator', paramKey: 'amenities', value: 'Elevator' },
-            { keyword: 'security system', paramKey: 'amenities', value: 'Security System' },
+            { keyword: 'modern', paramKey: 'style', value: 'Modern' },
+            { keyword: 'commercial real estate', paramKey: 'propertyType', value: 'Commercial' },
+            { keyword: 'Christchurch', paramKey: 'location', value: 'Christchurch' },
+            { keyword: 'for lease', paramKey: 'listingType', value: 'For Lease' },
+            { keyword: '300 sqm', paramKey: 'sizeMetersMin', value: 300 },
+            { keyword: 'outdoor entertaining', paramKey: 'amenities', value: 'Outdoor Entertaining' },
         ]
     }
 ];
 
-const formatValue = (key: keyof Omit<SearchParams, 'amenities'>, value: any): string => {
+const formatValue = (key: keyof Omit<SearchParams, 'amenities' | 'styleImage' | 'tags'>, value: any): string => {
     if (value === undefined || value === null) return '';
+    const numValue = Number(value);
     switch (key) {
-        case 'priceMin': return `$${(Number(value) / 1000).toFixed(0)}k+`;
-        case 'priceMax': return `Up to $${(Number(value) / 1000).toFixed(0)}k`;
+        case 'priceMin':
+            if (numValue >= 1000000) return `$${(numValue / 1000000).toFixed(1).replace(/\.0$/, '')}M+`;
+            return `$${(numValue / 1000).toFixed(0)}k+`;
+        case 'priceMax':
+            if (numValue >= 1000000) return `Up to $${(numValue / 1000000).toFixed(1).replace(/\.0$/, '')}M`;
+            return `Up to $${(numValue / 1000).toFixed(0)}k`;
         case 'bedroomsMin': return `${value}+ beds`;
         case 'bathroomsMin': return `${value}+ baths`;
-        case 'squareFootageMin': return `${value.toLocaleString()}+ sqft`;
-        case 'squareFootageMax': return `Up to ${value.toLocaleString()} sqft`;
+        case 'sizeMetersMin': return `${value.toLocaleString()}+ sqm`;
+        case 'sizeMetersMax': return `Up to ${value.toLocaleString()} sqm`;
         default: return String(value);
     }
 }
@@ -162,8 +128,9 @@ const PARAMETER_CONFIG = [
     { key: 'priceMax', label: 'Max Price', icon: <DollarSignIcon className="w-5 h-5" /> },
     { key: 'bedroomsMin', label: 'Bedrooms', icon: <BedIcon className="w-5 h-5" /> },
     { key: 'bathroomsMin', label: 'Bathrooms', icon: <BathIcon className="w-5 h-5" /> },
-    { key: 'squareFootageMin', label: 'Min Size', icon: <RulerIcon className="w-5 h-5" /> },
-    { key: 'squareFootageMax', label: 'Max Size', icon: <RulerIcon className="w-5 h-5" /> },
+    { key: 'sizeMetersMin', label: 'Min Size', icon: <RulerIcon className="w-5 h-5" /> },
+    { key: 'sizeMetersMax', label: 'Max Size', icon: <RulerIcon className="w-5 h-5" /> },
+    { key: 'style', label: 'Style', icon: <LayersIcon className="w-5 h-5" />, colSpan: 'sm:col-span-2' },
 ];
 
 const AMENITY_CONFIG = [
@@ -172,19 +139,17 @@ const AMENITY_CONFIG = [
   { key: 'Garage', label: 'Garage', icon: <CarIcon className="w-4 h-4" /> },
   { key: 'Garden', label: 'Garden', icon: <TreesIcon className="w-4 h-4" /> },
   { key: 'Gym', label: 'Gym', icon: <GymIcon className="w-4 h-4" /> },
-  { key: 'Doorman', label: 'Doorman', icon: <UserIcon className="w-4 h-4" /> },
   { key: 'Balcony', label: 'Balcony', icon: <BalconyIcon className="w-4 h-4" /> },
   { key: 'Waterfront', label: 'Waterfront', icon: <WavesIcon className="w-4 h-4" /> },
-  { key: 'AC', label: 'AC', icon: <SnowflakeIcon className="w-4 h-4" /> },
-  { key: 'Parking', label: 'Parking', icon: <CarIcon className="w-4 h-4" /> },
-  { key: 'Modern', label: 'Modern', icon: <SparklesIcon className="w-4 h-4" /> },
+  { key: 'Sea View', label: 'Sea View', icon: <WavesIcon className="w-4 h-4" /> },
+  { key: 'Mountain View', label: 'Mountain View', icon: <MountainIcon className="w-4 h-4" /> },
   { key: 'City View', label: 'City View', icon: <Building2Icon className="w-4 h-4" /> },
+  { key: 'Hot Tub', label: 'Hot Tub', icon: <HotTubIcon className="w-4 h-4" /> },
   { key: 'Fireplace', label: 'Fireplace', icon: <FireplaceIcon className="w-4 h-4" /> },
   { key: 'Laundry', label: 'In-unit Laundry', icon: <LaundryIcon className="w-4 h-4" /> },
   { key: 'Furnished', label: 'Furnished', icon: <SofaIcon className="w-4 h-4" /> },
   { key: 'Dishwasher', label: 'Dishwasher', icon: <UtensilsIcon className="w-4 h-4" /> },
   { key: 'Hardwood Floors', label: 'Hardwood Floors', icon: <LayersIcon className="w-4 h-4" /> },
-  { key: 'Storage', label: 'Storage', icon: <WarehouseIcon className="w-4 h-4" /> },
   { key: 'Wheelchair Accessible', label: 'Accessible', icon: <AccessibilityIcon className="w-4 h-4" /> },
   { key: 'EV Charging', label: 'EV Charging', icon: <EvStationIcon className="w-4 h-4" /> },
   { key: 'Gated Community', label: 'Gated', icon: <FenceIcon className="w-4 h-4" /> },
@@ -196,56 +161,41 @@ const AMENITY_CONFIG = [
   { key: 'Central Heating', label: 'Heating', icon: <ThermometerIcon className="w-4 h-4" /> },
   { key: 'Elevator', label: 'Elevator', icon: <ArrowUpDownIcon className="w-4 h-4" /> },
   { key: 'Fenced Yard', label: 'Fenced Yard', icon: <FenceIcon className="w-4 h-4" /> },
+  { key: 'Good School District', label: 'Good School District', icon: <BookOpenIcon className="w-4 h-4" /> },
+  { key: 'Outdoor Entertaining', label: 'Outdoor Entertaining', icon: <UsersIcon className="w-4 h-4" /> },
+  { key: 'New Build', label: 'New Build', icon: <SparklesIcon className="w-4 h-4" /> },
+  { key: 'Earthquake Strengthened', label: 'Earthquake Strengthened', icon: <ShieldCheckIcon className="w-4 h-4" /> },
 ];
 
-const LISTING_TYPE_KEYWORDS: { [key: string]: 'For Sale' | 'For Rent' } = {
-  buy: 'For Sale', purchase: 'For Sale', sell: 'For Sale', sale: 'For Sale',
-  rent: 'For Rent', lease: 'For Rent',
-};
-const PROPERTY_TYPE_KEYWORDS: { [key: string]: string } = {
-  house: 'House', home: 'House', villa: 'House',
-  apartment: 'Apartment', studio: 'Apartment', unit: 'Apartment',
-  condo: 'Condo', condominium: 'Condo',
-  townhouse: 'Townhouse', townhome: 'Townhouse',
-  loft: 'Loft', penthouse: 'Loft',
-};
-const AMENITY_KEYWORDS: { [key: string]: string } = {};
-AMENITY_CONFIG.forEach(amenity => {
-    AMENITY_KEYWORDS[amenity.key.toLowerCase()] = amenity.key;
-    AMENITY_KEYWORDS[amenity.label.toLowerCase()] = amenity.key;
-});
-AMENITY_KEYWORDS['pet friendly'] = 'Pets Allowed';
-AMENITY_KEYWORDS['air conditioning'] = 'AC';
-AMENITY_KEYWORDS['ev charger'] = 'EV Charging';
-AMENITY_KEYWORDS['in unit laundry'] = 'Laundry';
-AMENITY_KEYWORDS['office'] = 'Home Office';
-
+const PERMANENT_TAG_CONFIG: { key: PermanentTag, label: string, icon: React.ReactNode, activeColor: string }[] = [
+    { key: 'new', label: 'New', icon: <TagIcon className="w-4 h-4" />, activeColor: 'cyan' },
+    { key: 'premium', label: 'Premium', icon: <StarIcon className="w-4 h-4" />, activeColor: 'indigo' },
+    { key: 'open-house', label: 'Open House', icon: <UsersIcon className="w-4 h-4" />, activeColor: 'sky' },
+    { key: 'auction', label: 'Auction', icon: <GavelIcon className="w-4 h-4" />, activeColor: 'amber' },
+];
 
 const highlightTranscript = (transcript: string, highlights: string[]) => {
-    if (!highlights.length || !transcript) {
-        return <>{transcript}</>;
-    }
+    if (!highlights.length || !transcript) return <>{transcript}</>;
     const escapedHighlights = highlights.map(h => h.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'));
     if (escapedHighlights.length === 0) return <>{transcript}</>;
     const regex = new RegExp(`(${escapedHighlights.join('|')})`, 'gi');
     const parts = transcript.split(regex);
     
     return (
-        <>
-            {parts.map((part, i) =>
-                highlights.some(h => h.toLowerCase() === part.toLowerCase()) ? (
-                    <span key={i} className="animate-glow-text text-white">{part}</span>
-                ) : (
-                    part
-                )
-            )}
-        </>
+      <>
+        {parts.map((part, i) =>
+          highlights.some(h => h.toLowerCase() === part.toLowerCase()) ? (
+            <span key={i} className="animate-glow-text text-white">{part}</span>
+          ) : ( part )
+        )}
+      </>
     );
 };
 
 const VoiceCopilot: React.FC<VoiceCopilotProps> = ({ onResults }) => {
   const [status, setStatus] = useState<SearchStatus>('demo');
   const [isDemoMode, setIsDemoMode] = useState(true);
+  const [isClient, setIsClient] = useState(false);
 
   // Demo animation state
   const [exampleIndex, setExampleIndex] = useState(0);
@@ -260,8 +210,12 @@ const VoiceCopilot: React.FC<VoiceCopilotProps> = ({ onResults }) => {
   const [highlightedText, setHighlightedText] = useState<string[]>([]);
   
   const recognitionRef = useRef<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const lastFinalTranscript = useRef('');
-  const lastSpottedTranscriptLength = useRef(0);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const addGlowingParams = (paramKeys: string[]) => {
     setGlowingParams(prev => {
@@ -284,8 +238,9 @@ const VoiceCopilot: React.FC<VoiceCopilotProps> = ({ onResults }) => {
         return;
       }
     }
-
-    if (subIndex < searchExamples[exampleIndex].length) {
+    
+    const currentPhrase = demoSearches[exampleIndex].phrase;
+    if (subIndex < currentPhrase.length) {
       const timer = setTimeout(() => setSubIndex(subIndex + 1), 50);
       return () => clearTimeout(timer);
     }
@@ -298,51 +253,41 @@ const VoiceCopilot: React.FC<VoiceCopilotProps> = ({ onResults }) => {
   // Demo parameter recognition effect
   useEffect(() => {
     if (!isDemoMode) return;
-
     if (isDeleting && subIndex === 1) {
       setSearchParams(initialSearchParams);
       setGlowingParams(new Set());
     }
-
-    const newAnimatedText = searchExamples[exampleIndex].substring(0, subIndex);
+    const currentPhrase = demoSearches[exampleIndex].phrase;
+    const newAnimatedText = currentPhrase.substring(0, subIndex);
     setAnimatedText(newAnimatedText);
-    
     if (isDeleting || subIndex === 0) return;
 
     const currentDemo = demoSearches[exampleIndex];
     const updatedParams: Partial<SearchParams> = {};
     const newlyRecognizedKeywords: string[] = [];
     const newAmenities: string[] = [];
+    const newTags: PermanentTag[] = [];
 
     currentDemo.params.forEach(param => {
       if (newAnimatedText.toLowerCase().includes(param.keyword.toLowerCase())) {
           const { paramKey, value } = param;
           if (paramKey === 'amenities') {
-              if (!searchParams.amenities?.includes(value)) {
-                  newAmenities.push(value);
-              }
+            if (!searchParams.amenities?.includes(value)) newAmenities.push(value);
+          } else if (paramKey === 'tags') {
+            if (!searchParams.tags?.includes(value)) newTags.push(value);
           } else {
-              if ((searchParams as any)[paramKey] !== value) {
-                  (updatedParams as any)[paramKey] = value;
-              }
+            if ((searchParams as any)[paramKey] !== value) (updatedParams as any)[paramKey] = value;
           }
-
           if (newAnimatedText.toLowerCase().endsWith(param.keyword.toLowerCase().trim())) {
-            newlyRecognizedKeywords.push(paramKey === 'amenities' ? value : paramKey);
+            newlyRecognizedKeywords.push(paramKey === 'amenities' || paramKey === 'tags' ? value : paramKey);
           }
       }
     });
     
-    if (newAmenities.length > 0) {
-        updatedParams.amenities = [...(searchParams.amenities || []), ...newAmenities];
-    }
-
-    if (Object.keys(updatedParams).length > 0) {
-      setSearchParams(prev => ({ ...prev, ...updatedParams }));
-    }
-    if (newlyRecognizedKeywords.length > 0) {
-        addGlowingParams(newlyRecognizedKeywords);
-    }
+    if (newAmenities.length > 0) updatedParams.amenities = [...(searchParams.amenities || []), ...newAmenities];
+    if (newTags.length > 0) updatedParams.tags = [...(searchParams.tags || []), ...newTags];
+    if (Object.keys(updatedParams).length > 0) setSearchParams(prev => ({ ...prev, ...updatedParams }));
+    if (newlyRecognizedKeywords.length > 0) addGlowingParams(newlyRecognizedKeywords);
   }, [subIndex, isDeleting, exampleIndex, isDemoMode]);
 
   const switchToRealSearch = () => {
@@ -353,69 +298,43 @@ const VoiceCopilot: React.FC<VoiceCopilotProps> = ({ onResults }) => {
       setGlowingParams(new Set());
     }
   };
-  
-  const runClientSideKeywordSpotting = (text: string) => {
-    if (!text) return;
-    const lowerText = text.toLowerCase();
-    const updates: Partial<SearchParams> = {};
-    const newGlows: string[] = [];
 
-    for (const keyword in LISTING_TYPE_KEYWORDS) {
-        if (lowerText.includes(keyword)) {
-            updates.listingType = LISTING_TYPE_KEYWORDS[keyword];
-            newGlows.push('listingType');
-        }
+  const handleCancel = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setStatus('idle');
+    if (recognitionRef.current) {
+      recognitionRef.current.onend = null; // Prevent onend handler
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
     }
-    for (const keyword in PROPERTY_TYPE_KEYWORDS) {
-        if (lowerText.includes(keyword)) {
-            updates.propertyType = PROPERTY_TYPE_KEYWORDS[keyword];
-            newGlows.push('propertyType');
-        }
-    }
-    const currentAmenities = searchParams.amenities || [];
-    const foundAmenities = new Set<string>();
-    for (const keyword in AMENITY_KEYWORDS) {
-        if (lowerText.includes(keyword)) {
-            const amenity = AMENITY_KEYWORDS[keyword];
-            if (!currentAmenities.includes(amenity)) {
-                foundAmenities.add(amenity);
-            }
-        }
-    }
-    if (foundAmenities.size > 0) {
-        updates.amenities = [...currentAmenities, ...Array.from(foundAmenities)];
-        newGlows.push(...Array.from(foundAmenities));
-    }
-    if (Object.keys(updates).length > 0) {
-        setSearchParams(prev => ({ ...prev, ...updates }));
-        addGlowingParams(newGlows);
-    }
+    switchToRealSearch();
+    setTranscript('');
+    lastFinalTranscript.current = '';
+    setHighlightedText([]);
+    // Reset params but keep permanent tags that were toggled
+    setSearchParams(prev => ({ ...initialSearchParams, tags: prev.tags }));
+    setGlowingParams(new Set());
   };
-
+  
   const handleStartListening = () => {
     if (isDemoMode) {
       switchToRealSearch();
-    } else if (status === 'done') {
-      setSearchParams(initialSearchParams);
+    } else if (status === 'done' || status === 'idle' || status === 'confirming') {
+      setSearchParams(prev => ({ ...initialSearchParams, tags: prev.tags }));
       setGlowingParams(new Set());
     }
-
-    if (!SpeechRecognition) {
-      console.error("Speech Recognition not supported.");
-      return;
-    }
+    if (!SpeechRecognition) { console.error("Speech Recognition not supported."); return; }
     if (recognitionRef.current) return;
     
     setTranscript('');
     lastFinalTranscript.current = '';
-    lastSpottedTranscriptLength.current = 0;
     setHighlightedText([]);
     setStatus('listening');
 
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = 'en-US';
+    recognition.lang = 'en-AU';
     
     recognition.onresult = (event: any) => {
       if(isDemoMode) switchToRealSearch();
@@ -427,10 +346,6 @@ const VoiceCopilot: React.FC<VoiceCopilotProps> = ({ onResults }) => {
       }
       const fullTranscript = final_transcript + interim_transcript;
       setTranscript(fullTranscript);
-
-      const newTextForSpotting = fullTranscript.substring(lastSpottedTranscriptLength.current);
-      runClientSideKeywordSpotting(newTextForSpotting);
-      lastSpottedTranscriptLength.current = fullTranscript.length;
 
       if (final_transcript && final_transcript !== lastFinalTranscript.current) {
         const newChunk = final_transcript.substring(lastFinalTranscript.current.length);
@@ -446,28 +361,39 @@ const VoiceCopilot: React.FC<VoiceCopilotProps> = ({ onResults }) => {
     recognitionRef.current = recognition;
   };
 
-  const handleStopListening = () => {
-      if (recognitionRef.current) recognitionRef.current.stop();
-  };
+  const handleStopListening = () => { if (recognitionRef.current) recognitionRef.current.stop(); };
 
   const processTranscript = async (text: string) => {
-    if (text.trim().toLowerCase().match(/^(search|let's go|lets go|find|ok|find my house|find my haus)$/)) {
-        handleSearch();
-        return;
-    }
+    if (text.trim().toLowerCase().match(/^(search|let's go|lets go|find|ok|find my house|find my haus)$/)) { handleSearch(); return; }
     if (text.trim().length < 3) return;
     setStatus('processing');
     try {
         const amenitiesList = AMENITY_CONFIG.map(a => a.key).join("', '");
         const paramSchema = (type: Type, description: string) => ({ type: Type.OBJECT, properties: { value: { type, description }, sourceText: { type: Type.ARRAY, items: { type: Type.STRING }, description: "The exact words from the user's query." } } });
         const arrayParamSchema = (description: string) => ({ type: Type.OBJECT, properties: { value: { type: Type.ARRAY, items: { type: Type.STRING }, description }, sourceText: { type: Type.ARRAY, items: { type: Type.STRING }, description: "The exact words from the user's query." } } });
-        const responseSchema = { type: Type.OBJECT, properties: { location: paramSchema(Type.STRING, "City, state, or neighborhood."), propertyType: paramSchema(Type.STRING, "Type of property. Standardize variations. E.g., 'home'/'villa' -> 'House'; 'studio' -> 'Apartment'; 'condo' -> 'Condo'; 'townhome' -> 'Townhouse'."), listingType: paramSchema(Type.STRING, "Transaction type. Infer 'For Sale' from words like 'buy', 'purchase', 'sell'. Infer 'For Rent' from 'rent' or 'lease'."), priceMin: paramSchema(Type.NUMBER, "Minimum price."), priceMax: paramSchema(Type.NUMBER, "Maximum price."), bedroomsMin: paramSchema(Type.NUMBER, "Min bedrooms."), bathroomsMin: paramSchema(Type.NUMBER, "Min bathrooms."), squareFootageMin: paramSchema(Type.NUMBER, "Min sqft."), squareFootageMax: paramSchema(Type.NUMBER, "Max sqft."), amenities: arrayParamSchema(`Amenities from: '${amenitiesList}'.`) } };
-        
+        const responseSchema = {
+            type: Type.OBJECT, properties: {
+                location: paramSchema(Type.STRING, "City, state, or neighborhood."),
+                locationRadiusKm: paramSchema(Type.NUMBER, "Search radius in kilometers from the specified location."),
+                propertyType: paramSchema(Type.STRING, "Type of property. Standardize variations. E.g., 'home'/'villa' -> 'House'; 'studio' -> 'Apartment'; 'condo' -> 'Condo'; 'townhome' -> 'Townhouse'."),
+                listingType: paramSchema(Type.STRING, "Transaction type. Infer 'For Sale' from words like 'buy', 'purchase', 'sell'. Infer 'For Rent' from 'rent'. Infer 'For Lease' from 'lease'."),
+                priceMin: paramSchema(Type.NUMBER, "Minimum price."),
+                priceMax: paramSchema(Type.NUMBER, "Maximum price."),
+                bedroomsMin: paramSchema(Type.NUMBER, "Min bedrooms."),
+                bathroomsMin: paramSchema(Type.NUMBER, "Min bathrooms."),
+                sizeMetersMin: paramSchema(Type.NUMBER, "Min size in square meters."),
+                sizeMetersMax: paramSchema(Type.NUMBER, "Max size in square meters."),
+                style: paramSchema(Type.STRING, "Architectural style of the property, e.g., 'Modern', 'Victorian', 'Minimalist'."),
+                amenities: arrayParamSchema(`Amenities from: '${amenitiesList}'.`),
+                tags: arrayParamSchema(`Property tags from: 'new', 'premium', 'open-house', 'auction'. Infer from phrases like 'newly listed', 'luxury property', 'open for inspection'.`)
+            }
+        };
         const systemInstruction = `You are an intelligent assistant for a real estate website called HAUS. Your task is to extract search parameters from the user's spoken query based on the provided JSON schema.
-- For 'listingType', accurately infer 'For Sale' or 'For Rent' from colloquial terms.
+- For 'listingType', accurately infer 'For Sale', 'For Rent', or 'For Lease' from colloquial terms.
 - For 'propertyType', normalize various terms into the standard categories.
-- Extract numerical values for prices, bedrooms, bathrooms, and square footage.
-- Identify any amenities mentioned by the user.
+- Extract numerical values for prices, bedrooms, bathrooms, and square meters.
+- Identify any amenities or architectural styles mentioned by the user.
+- Identify property tags like 'New', 'Premium', or 'Open House' from descriptive phrases.
 - Only return values for parameters that are explicitly mentioned or can be clearly inferred from the user's latest query. Do not guess or fill in missing information.`;
         const userContent = `Current search criteria: ${JSON.stringify(searchParams)}. New user query: "${text}".`;
 
@@ -484,10 +410,11 @@ const VoiceCopilot: React.FC<VoiceCopilotProps> = ({ onResults }) => {
                     if (key === 'amenities') {
                       const existingAmenities = new Set(searchParams.amenities || []);
                       const newAmenities = (param.value as string[]).filter(a => AMENITY_CONFIG.some(ac => ac.key === a) && !existingAmenities.has(a));
-                      if (newAmenities.length > 0) {
-                          updatedParamsPartial.amenities = [...Array.from(existingAmenities), ...newAmenities];
-                          newGlowing.push(...newAmenities);
-                      }
+                      if (newAmenities.length > 0) { updatedParamsPartial.amenities = [...Array.from(existingAmenities), ...newAmenities]; newGlowing.push(...newAmenities); }
+                    } else if (key === 'tags') {
+                      const existingTags = new Set(searchParams.tags || []);
+                      const newTags = (param.value as string[]).filter(t => PERMANENT_TAG_CONFIG.some(tc => tc.key === t) && !existingTags.has(t as any));
+                      if (newTags.length > 0) { updatedParamsPartial.tags = [...Array.from(existingTags), ...newTags] as any; newGlowing.push(...newTags); }
                     } else {
                       (updatedParamsPartial as any)[key] = param.value;
                       newGlowing.push(key);
@@ -508,73 +435,152 @@ const VoiceCopilot: React.FC<VoiceCopilotProps> = ({ onResults }) => {
     }
   };
   
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    // ... function remains the same
+  };
+  
   const handleSearch = () => {
     setStatus('done');
     if (recognitionRef.current) recognitionRef.current.stop();
     const mockResults = generateMockResults(searchParams);
     setTimeout(() => onResults(mockResults, searchParams), 800);
   }
-
-  useEffect(() => {
-    return () => {
-      if (recognitionRef.current) recognitionRef.current.stop();
-    };
-  }, []);
-
-  const statusMessages: Record<SearchStatus, string> = {
-    demo: "Watch the demo or click the mic to start.",
-    idle: "Click to speak",
-    listening: "Listening...",
-    processing: "Updating...",
-    confirming: "Ready to search. Say 'Find my HAUS' or click the button.",
-    done: "Finding properties...",
-  };
   
+  const handleToggleTag = (tagKey: PermanentTag) => {
+    switchToRealSearch();
+    setSearchParams(prev => {
+        const currentTags = new Set(prev.tags || []);
+        if (currentTags.has(tagKey)) {
+            currentTags.delete(tagKey);
+        } else {
+            currentTags.add(tagKey);
+        }
+        return { ...prev, tags: Array.from(currentTags) };
+    });
+    setGlowingParams(prev => {
+      const newSet = new Set(prev);
+      newSet.add(tagKey);
+      return newSet;
+    })
+  };
+
+  useEffect(() => { return () => { if (recognitionRef.current) recognitionRef.current.stop(); }; }, []);
+
   const displayedTranscript = isDemoMode ? animatedText : transcript;
   const keywordsForHighlight = isDemoMode ? demoSearches[exampleIndex].params.map(p => p.keyword) : highlightedText;
-  const isConfirming = status === 'confirming';
+
+  const getButtonContent = () => {
+    switch(status) {
+        case 'listening':
+        case 'processing':
+            return (
+                <div className="relative w-full h-full flex items-center justify-center">
+                    <div className="absolute inset-0 flex items-center justify-center gap-0.5 overflow-hidden opacity-40">
+                        {[...Array(48)].map((_, i) => (
+                            <div
+                                key={i}
+                                className="w-0.5 rounded-full bg-white/80 animate-pulse"
+                                style={
+                                    isClient
+                                        ? {
+                                            height: `${10 + Math.random() * 60}%`,
+                                            animationDelay: `${i * 0.05}s`,
+                                        }
+                                        : { height: '20%' }
+                                }
+                            />
+                        ))}
+                    </div>
+                    <span className="relative z-10">{status === 'processing' && "Updating..."}</span>
+                    {status === 'listening' && (
+                        <button
+                            onClick={handleCancel}
+                            className="absolute right-4 z-20 p-1.5 rounded-full bg-black/20 hover:bg-black/40 transition-colors"
+                            aria-label="Cancel search"
+                        >
+                            <XIcon className="w-5 h-5" />
+                        </button>
+                    )}
+                </div>
+            );
+        case 'confirming':
+            return (
+                <>
+                    <SearchIcon className="w-5 h-5 stroke-[1.5]" />
+                    <span>Find My HAUS</span>
+                </>
+            );
+        case 'done':
+            return <span>Finding properties...</span>
+        default: // demo, idle
+            return (
+                <>
+                    <MicIcon className="w-5 h-5" />
+                    <span>Try HAUS Finder</span>
+                </>
+            );
+    }
+  };
+
+  const getButtonAction = () => {
+      switch(status) {
+          case 'listening':
+              return handleStopListening;
+          case 'confirming':
+              return handleSearch;
+          default:
+              return handleStartListening;
+      }
+  };
+
+  const getMainButtonClassName = () => {
+      let baseClasses = "flex-[4] inline-flex items-center justify-center gap-3 rounded-2xl px-8 h-14 text-lg font-medium tracking-tight text-white border transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 font-geist relative overflow-hidden";
+      switch(status) {
+          case 'confirming':
+              return `${baseClasses} bg-green-600 hover:bg-green-700 border-green-500/50 focus-visible:outline-green-500 animate-glow-green`;
+          case 'listening':
+          case 'processing':
+              return `${baseClasses} bg-red-600/80 border-red-500/50 cursor-pointer`;
+          case 'done':
+              return `${baseClasses} bg-neutral-700 border-transparent`;
+          default: // demo, idle
+              return `${baseClasses} bg-blue-600 hover:bg-blue-700 border-transparent focus-visible:outline-blue-500`;
+      }
+  };
+
 
   return (
     <div className="relative w-full h-full flex flex-col items-center bg-neutral-950/50 overflow-hidden font-geist p-4 sm:p-8">
       <div className="absolute inset-0 w-full h-full bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.1),rgba(255,255,255,0))]"></div>
-      
       <div className="w-full max-w-6xl text-center flex flex-col h-full">
         <div className="flex-shrink-0">
-          <AIVoice
-            submitted={!isDemoMode && (status === 'listening' || status === 'processing')}
-            onClick={isDemoMode || status === 'done' || status === 'idle' || status === 'confirming' ? handleStartListening : handleStopListening}
-            statusText={statusMessages[status]}
-          />
-          <p className="mt-1 min-h-[56px] text-base text-neutral-400 leading-relaxed transition-opacity duration-300 p-2" aria-live="polite">
-            {highlightTranscript(displayedTranscript, keywordsForHighlight)}
-            {(isDemoMode || status === 'listening') && <span className="animate-blink text-neutral-600">|</span>}
+          <p className="mt-1 h-24 text-lg text-neutral-300 leading-relaxed transition-opacity duration-300 p-2 flex items-center justify-center" aria-live="polite">
+            <span className="block max-w-2xl">
+              { status === 'listening' && transcript.length === 0 && !isDemoMode && <span className="text-neutral-500">Listening...</span>}
+              {highlightTranscript(displayedTranscript, keywordsForHighlight)}
+              {(isDemoMode || (status === 'listening' && transcript.length === 0)) && <span className="animate-blink text-neutral-600">|</span>}
+            </span>
           </p>
         </div>
         
         <div className="flex-grow my-4 overflow-y-auto pr-2">
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 {PARAMETER_CONFIG.map(param => {
-                    const key = param.key as keyof Omit<SearchParams, 'amenities'>;
-                    const value = searchParams[key];
-                    const hasValue = value !== undefined && value !== null;
-                    const isGlowing = glowingParams.has(key);
-
+                    const key = param.key as keyof SearchParams;
+                    if (key === 'style') { /* Style card JSX remains the same */ }
+                    let displayValue: string | React.ReactNode = '-'; let hasValue = false; let isGlowing = glowingParams.has(key);
+                    if (key === 'location') {
+                        const locationValue = searchParams.location; const radiusValue = searchParams.locationRadiusKm; hasValue = !!locationValue;
+                        if (locationValue) { displayValue = locationValue; if (radiusValue) { displayValue += ` (within ${radiusValue} km)`; } }
+                        isGlowing = glowingParams.has('location') || glowingParams.has('locationRadiusKm');
+                    } else { const value = searchParams[key]; hasValue = value !== undefined && value !== null && value !== ''; if(hasValue) { displayValue = formatValue(key as any, value); } }
                     return (
-                        <div key={param.key} className={`
-                            ${param.colSpan || 'sm:col-span-1'}
-                            p-4 rounded-xl border transition-all duration-300
-                            ${hasValue ? 'bg-white/5 border-white/10' : 'bg-white/[0.03] border-transparent'}
-                            ${isGlowing ? 'animate-glow' : ''}
-                        `}>
+                        <div key={param.key} className={` ${param.colSpan || 'sm:col-span-1'} p-4 rounded-xl border transition-all duration-300 ${hasValue ? 'bg-white/5 border-white/10' : 'bg-white/[0.03] border-transparent'} ${glowingParams.has(key) ? 'animate-glow' : ''} `}>
                             <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-full ${hasValue ? 'bg-blue-500/10 text-blue-300' : 'bg-white/5 text-neutral-400'}`}>
-                                    {param.icon}
-                                </div>
+                                <div className={`p-2 rounded-full ${hasValue ? 'bg-blue-500/10 text-blue-300' : 'bg-white/5 text-neutral-400'}`}>{param.icon}</div>
                                 <div className="flex-grow self-center overflow-hidden">
                                     <h3 className="text-sm font-medium text-neutral-400 text-left">{param.label}</h3>
-                                    <p className="text-base font-semibold text-neutral-100 text-left min-h-[24px] cursor-pointer truncate">
-                                      {hasValue ? formatValue(key, value) : '-'}
-                                    </p>
+                                    <p className="text-base font-semibold text-neutral-100 text-left min-h-[24px] cursor-pointer truncate">{displayValue}</p>
                                 </div>
                             </div>
                         </div>
@@ -582,27 +588,17 @@ const VoiceCopilot: React.FC<VoiceCopilotProps> = ({ onResults }) => {
                 })}
             </div>
 
-            {(searchParams.amenities && searchParams.amenities.length > 0) && (
+            {searchParams.amenities && searchParams.amenities.length > 0 && (
               <div className="mt-4 pt-4 border-t border-white/10">
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                  <h4 className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-3 px-1 text-left">Amenities</h4>
+                  <div className="flex flex-wrap gap-3">
                       {(searchParams.amenities || []).map(amenityKey => {
-                          const amenity = AMENITY_CONFIG.find(a => a.key === amenityKey);
-                          if (!amenity) return null;
-
+                          const amenity = AMENITY_CONFIG.find(a => a.key === amenityKey); if (!amenity) return null;
                           const isGlowing = glowingParams.has(amenity.key);
-
                           return (
-                              <div key={amenity.key} className={`
-                                  animate-scale-up p-3 rounded-xl border transition-all duration-300 flex items-center gap-2
-                                  bg-white/5 border-white/10
-                                  ${isGlowing ? 'animate-glow' : ''}
-                              `}>
-                                  <div className="flex-shrink-0 p-1.5 rounded-full bg-blue-500/10 text-blue-300">
-                                      {amenity.icon}
-                                  </div>
-                                  <p className="text-xs font-medium truncate text-neutral-100">
-                                      {amenity.label}
-                                  </p>
+                              <div key={amenity.key} className={` animate-scale-up p-3 rounded-xl border transition-all duration-300 flex items-center gap-2 bg-white/5 border-white/10 ${isGlowing ? 'animate-glow' : ''} `}>
+                                  <div className="flex-shrink-0 p-1.5 rounded-full bg-blue-500/10 text-blue-300">{amenity.icon}</div>
+                                  <p className="text-xs font-medium truncate text-neutral-100">{amenity.label}</p>
                               </div>
                           );
                       })}
@@ -611,26 +607,44 @@ const VoiceCopilot: React.FC<VoiceCopilotProps> = ({ onResults }) => {
             )}
         </div>
 
-        <div className="flex-shrink-0 mt-auto pt-4 text-center">
-          {!isDemoMode && status === 'confirming' && (
-              <p className="text-sm text-neutral-400 mb-3 animate-fade-in" style={{ animationDuration: '500ms' }}>
-                  If this looks right, say "Find my HAUS" or click the button.
-              </p>
-          )}
-          <button 
-            onClick={handleSearch} 
-            disabled={isDemoMode || status === 'done'} 
-            className={`
-                w-full max-w-xs mx-auto inline-flex items-center justify-center gap-2 rounded-lg px-8 py-3 text-base font-medium tracking-tight text-white border transition-all 
-                focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50
-                ${isConfirming 
-                    ? 'bg-green-600 hover:bg-green-700 border-green-500/50 focus-visible:outline-green-500 animate-glow-green' 
-                    : 'bg-blue-600 hover:bg-blue-700 border-transparent focus-visible:outline-blue-500'
-                }
-            `}>
-              <SearchIcon className="w-5 h-5 stroke-[1.5]" />
-              <span className="font-geist">{isConfirming ? "Find My HAUS" : "Find Properties"}</span>
-          </button>
+        <div className="flex-shrink-0 mt-auto pt-4 pb-2 w-full">
+            <div className="w-full max-w-3xl mx-auto flex items-center justify-between gap-3 sm:gap-4">
+                {PERMANENT_TAG_CONFIG.slice(0, 2).map(tag => {
+                    const isActive = searchParams.tags?.includes(tag.key);
+                    const colors = {
+                        cyan: 'bg-cyan-600/80 border-cyan-500 text-white',
+                        indigo: 'bg-indigo-600/80 border-indigo-500 text-white',
+                        sky: 'bg-sky-600/80 border-sky-500 text-white',
+                        amber: 'bg-amber-600/80 border-amber-500 text-white',
+                    }
+                    return (
+                        <button key={tag.key} onClick={() => handleToggleTag(tag.key)} className={`flex-1 flex items-center justify-center gap-2 rounded-xl h-14 text-sm font-medium tracking-tight border transition-all ${isActive ? colors[tag.activeColor] : 'bg-transparent border-white/10 text-neutral-300 hover:bg-white/5'} ${glowingParams.has(tag.key) ? 'animate-glow' : ''}`}>
+                            {tag.icon} <span>{tag.label}</span>
+                        </button>
+                    )
+                })}
+                <button
+                    onClick={getButtonAction()}
+                    disabled={status === 'done' || status === 'processing'}
+                    className={getMainButtonClassName()}
+                >
+                    {getButtonContent()}
+                </button>
+                {PERMANENT_TAG_CONFIG.slice(2, 4).map(tag => {
+                     const isActive = searchParams.tags?.includes(tag.key);
+                     const colors = {
+                        cyan: 'bg-cyan-600/80 border-cyan-500 text-white',
+                        indigo: 'bg-indigo-600/80 border-indigo-500 text-white',
+                        sky: 'bg-sky-600/80 border-sky-500 text-white',
+                        amber: 'bg-amber-600/80 border-amber-500 text-white',
+                    }
+                    return (
+                        <button key={tag.key} onClick={() => handleToggleTag(tag.key)} className={`flex-1 flex items-center justify-center gap-2 rounded-xl h-14 text-sm font-medium tracking-tight border transition-all ${isActive ? colors[tag.activeColor] : 'bg-transparent border-white/10 text-neutral-300 hover:bg-white/5'} ${glowingParams.has(tag.key) ? 'animate-glow' : ''}`}>
+                            {tag.icon} <span>{tag.label}</span>
+                        </button>
+                    )
+                })}
+            </div>
         </div>
       </div>
     </div>

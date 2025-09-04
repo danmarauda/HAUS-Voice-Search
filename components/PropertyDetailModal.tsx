@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { type Property } from '../types';
 import { XIcon, MapPinIcon, EyeIcon, RouteIcon, HeartIcon } from './IconComponents';
 
@@ -28,6 +28,15 @@ const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({ property, onC
   const { id, title, location, price, details, imageUrl, description, button } = property;
   const ButtonIcon = button.icon === 'eye' ? EyeIcon : RouteIcon;
   const isSaved = savedProperties.has(id);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  const handleToggleSave = () => {
+    if (!isSaved) {
+      setIsAnimating(true);
+      setTimeout(() => setIsAnimating(false), 400);
+    }
+    onToggleSave(id);
+  };
 
   return (
     <div
@@ -74,11 +83,11 @@ const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({ property, onC
         </div>
         <div className="mt-auto p-6 border-t border-white/10 flex items-center justify-between flex-shrink-0 bg-neutral-900/50 rounded-b-2xl">
             <button 
-              onClick={() => onToggleSave(id)}
+              onClick={handleToggleSave}
               aria-label={isSaved ? "Unsave property" : "Save property"}
               className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/10 text-neutral-200 hover:bg-white/10 transition-colors"
             >
-              <HeartIcon className={`w-5 h-5 stroke-[1.5] transition-colors ${isSaved ? 'fill-red-500 stroke-red-500' : ''}`} />
+              <HeartIcon className={`w-5 h-5 stroke-[1.5] transition-colors ${isSaved ? 'fill-red-500 stroke-red-500' : ''} ${isAnimating ? 'animate-heart-pop' : ''}`} />
             </button>
             <button className="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium tracking-tight text-white bg-blue-600 hover:bg-blue-700 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500">
               <ButtonIcon className="w-4 h-4 stroke-[1.5]" />
